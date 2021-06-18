@@ -113,6 +113,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Invitado"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnInvitadoActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

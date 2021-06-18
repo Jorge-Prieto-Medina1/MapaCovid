@@ -5,17 +5,39 @@
  */
 package ui;
 
+import Objetos.UsuarioRegistro;
+import static Utiles.Utiles.recibirObjeto;
+import java.awt.RenderingHints.Key;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Base64;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.SealedObject;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author pablo
  */
 public class formLogin extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formLogin
-     */
-    public formLogin() {
+    public Socket servidor;
+    public SecretKey  claveSecreta;
+    
+    public formLogin() throws UnknownHostException, IOException, ClassNotFoundException {
         initComponents();
+        InetAddress dir = InetAddress.getLocalHost();
+        this.servidor = new Socket(dir, 9000);
+        String claveCodificada =(String) recibirObjeto(servidor);
+        byte[] decodedKey = Base64.getDecoder().decode(claveCodificada);
+        this.claveSecreta = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES"); 
+        System.out.println("Conseguida la conexion");
+        
     }
 
     /**
@@ -60,6 +82,11 @@ public class formLogin extends javax.swing.JFrame {
         jLabel2.setText("Contraseña:");
 
         btnInvitado.setText("Invitado");
+        btnInvitado.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInvitadoActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -108,12 +135,49 @@ public class formLogin extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        // TODO add your handling code here:
+        if(!this.txtEmail.equals("") && !this.txtContraseña.getText().equals("")){
+             try {
+               Utiles.Utiles.enviarObjeto(servidor, true);
+               Utiles.Utiles.enviarObjeto(servidor, true);
+               UsuarioRegistro usuario= new UsuarioRegistro(this.txtEmail.getText(), Utiles.Utiles.cifrarContraseña(this.txtContraseña.getText()));
+               SealedObject usuariocifrado = Utiles.Utiles.cifrarSimetrico(usuario, claveSecreta);
+               Utiles.Utiles.enviarObjeto(servidor, usuariocifrado);
+               boolean existe = (boolean) Utiles.Utiles.recibirObjeto(servidor);
+               if (existe){
+                    int rol = (int) Utiles.Utiles.recibirObjeto(servidor);
+                    String clavePublicaString = (String) Utiles.Utiles.recibirObjeto(servidor);
+                    String clavePrivadaString = (String) Utiles.Utiles.recibirObjeto(servidor);
+                     JOptionPane.showMessageDialog(null, "Exito");
+               }else{
+                   JOptionPane.showMessageDialog(null, "Error contraseña o email incorrectos o cuenta no activada");
+               }
+               
+           } catch (IOException ex) {
+               Logger.getLogger(formRegistro.class.getName()).log(Level.SEVERE, null, ex);
+           } catch (Exception ex) {
+               Logger.getLogger(formRegistro.class.getName()).log(Level.SEVERE, null, ex);
+           }
+            
+            
+        }else{
+             JOptionPane.showMessageDialog(null, "Rellene bien los campos");
+        }
     }//GEN-LAST:event_btnLoginActionPerformed
 
     private void btnRegistroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistroActionPerformed
-        // TODO add your handling code here:
+        formRegistro reg = new formRegistro(servidor, this);
+        this.setVisible(false);
+        reg.setVisible(true);
     }//GEN-LAST:event_btnRegistroActionPerformed
+
+    private void btnInvitadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvitadoActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(servidor, true);
+            Utiles.Utiles.enviarObjeto(servidor, true);
+        } catch (IOException ex) {
+            Logger.getLogger(formLogin.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnInvitadoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -145,7 +209,13 @@ public class formLogin extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new formLogin().setVisible(true);
+                try {
+                    new formLogin().setVisible(true);
+                } catch (IOException ex) {
+                    Logger.getLogger(formLogin.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(formLogin.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }

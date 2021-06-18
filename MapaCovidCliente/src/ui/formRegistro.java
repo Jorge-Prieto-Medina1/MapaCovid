@@ -5,16 +5,26 @@
  */
 package ui;
 
+import Objetos.UsuarioRegistro;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author pablo
  */
 public class formRegistro extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formRegistro
-     */
-    public formRegistro() {
+    private Socket Servidor;
+    private JFrame LoginjFrame;
+        
+    public formRegistro(Socket servidor, JFrame loginjFrame) {
+        this.Servidor = servidor;
+        this.LoginjFrame = loginjFrame;
         initComponents();
     }
 
@@ -37,7 +47,7 @@ public class formRegistro extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         txtContraseña = new javax.swing.JPasswordField();
         txtContraseña1 = new javax.swing.JPasswordField();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cmbRol = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -68,7 +78,12 @@ public class formRegistro extends javax.swing.JFrame {
 
         jLabel4.setText("Contraseña:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gestor", "Administrador" }));
+        cmbRol.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Gestor", "Administrador" }));
+        cmbRol.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbRolActionPerformed(evt);
+            }
+        });
 
         jLabel5.setText("Rol:");
 
@@ -89,7 +104,7 @@ public class formRegistro extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnRegistro, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbRol, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnLogin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap(62, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
@@ -121,7 +136,7 @@ public class formRegistro extends javax.swing.JFrame {
                     .addComponent(txtContraseña1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbRol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
                 .addGap(28, 28, 28)
                 .addComponent(btnRegistro)
@@ -134,12 +149,37 @@ public class formRegistro extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistroActionPerformed
-        // TODO add your handling code here:
+ 
+        if (!this.txtNombre.equals("") && !this.txtContraseña.equals("") && !this.txtEmail.equals("") && this.txtContraseña.getText().equals(this.txtContraseña1.getText())){
+           try {
+               Utiles.Utiles.enviarObjeto(Servidor, false);
+               UsuarioRegistro usuario= new UsuarioRegistro(this.txtEmail.getText(), this.txtNombre.getText(), Utiles.Utiles.cifrarContraseña(this.txtContraseña.getText()), this.cmbRol.getSelectedItem().toString());
+               Utiles.Utiles.enviarObjeto(Servidor, usuario);
+               boolean Registrado = (boolean) Utiles.Utiles.recibirObjeto(Servidor);
+               if (Registrado){
+                   JOptionPane.showMessageDialog(null, "Registro completado, por favor espere a que un administrador active su cuenta");
+               }else{
+                   JOptionPane.showMessageDialog(null, "Error en el registro, usuario o email en uso");
+               }
+               
+           } catch (IOException ex) {
+               Logger.getLogger(formRegistro.class.getName()).log(Level.SEVERE, null, ex);
+           } catch (Exception ex) {
+               Logger.getLogger(formRegistro.class.getName()).log(Level.SEVERE, null, ex);
+           }
+       }else{
+            JOptionPane.showMessageDialog(null, "Rellene bien los campos, recuerde que las contraseñas tienen que coincidir");
+       }
     }//GEN-LAST:event_btnRegistroActionPerformed
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        // TODO add your handling code here:
+        this.LoginjFrame.setVisible(true);
+        this.setVisible(false);
     }//GEN-LAST:event_btnLoginActionPerformed
+
+    private void cmbRolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbRolActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbRolActionPerformed
 
     /**
      * @param args the command line arguments
@@ -148,7 +188,7 @@ public class formRegistro extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLogin;
     private javax.swing.JButton btnRegistro;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cmbRol;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
