@@ -24,8 +24,8 @@ CREATE TABLE `usuario` (
   `contraseña` varchar(255) NOT NULL,
   `rol` tinyint(1) NOT NULL,
   `activo` tinyint(1) NOT NULL,
-  `clave_publica` varchar(255) NOT NULL,
-  `clave_privada` varchar(255) NOT NULL
+  `clave_publica` varchar(500) NOT NULL,
+  `clave_privada` varchar(1000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE `usuario`
