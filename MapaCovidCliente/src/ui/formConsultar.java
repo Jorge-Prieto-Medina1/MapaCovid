@@ -5,17 +5,33 @@
  */
 package ui;
 
+import Objetos.DatosSemana;
+import Objetos.Region;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author pablo
  */
 public class formConsultar extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formConsultar
-     */
-    public formConsultar() {
+    private Socket Servidor;
+    private formSeleccion seleccion;
+    
+    
+    public formConsultar(Socket Servidor, formSeleccion Seleccion) {
         initComponents();
+        this.seleccion = Seleccion;
+        this.Servidor = Servidor;
+        cargarCmb();
     }
 
     /**
@@ -28,7 +44,7 @@ public class formConsultar extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        dgvDatos = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         btnConsultarTodo = new javax.swing.JButton();
@@ -39,7 +55,7 @@ public class formConsultar extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        dgvDatos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -58,13 +74,18 @@ public class formConsultar extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(dgvDatos);
 
         jLabel1.setText("Region");
 
         jLabel2.setText("Semana");
 
         btnConsultarTodo.setText("Consultar todo");
+        btnConsultarTodo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConsultarTodoActionPerformed(evt);
+            }
+        });
 
         btnFiltrar.setText("Filtrar Consulta");
         btnFiltrar.addActionListener(new java.awt.event.ActionListener() {
@@ -74,6 +95,11 @@ public class formConsultar extends javax.swing.JFrame {
         });
 
         btnVolver.setText("Volver");
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -107,13 +133,17 @@ public class formConsultar extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(btnConsultarTodo)
                     .addComponent(cmbRegion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnVolver)
-                .addGap(10, 10, 10)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(btnFiltrar)
-                    .addComponent(txtSemana, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnVolver)
+                        .addGap(10, 10, 10)
+                        .addComponent(btnFiltrar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(txtSemana, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(34, 34, 34))
@@ -123,8 +153,49 @@ public class formConsultar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnFiltrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFiltrarActionPerformed
-        // TODO add your handling code here:
+       if (!this.txtSemana.equals("") && this.cmbRegion.getSelectedIndex()!= -1){
+             try {
+                 Utiles.Utiles.enviarObjeto(Servidor, 1);
+                 String region = this.cmbRegion.getSelectedItem().toString();
+                 int semana = Integer.parseInt(this.txtSemana.getText());
+                 System.out.println(semana);
+                 System.out.println(region);
+                 DatosSemana datos = new DatosSemana(region, semana);
+ 
+                Utiles.Utiles.enviarObjeto(Servidor, datos);
+                 
+                ArrayList <DatosSemana> datosFiltrados = (ArrayList <DatosSemana>) Utiles.Utiles.recibirObjeto(Servidor);
+                rellenarTabla(datosFiltrados);
+                 
+             } catch (IOException ex) {
+                 Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (ClassNotFoundException ex) {
+               Logger.getLogger(formConsultar.class.getName()).log(Level.SEVERE, null, ex);
+           }
+       }
     }//GEN-LAST:event_btnFiltrarActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 3);
+            this.seleccion.setVisible(true);
+            this.dispose();
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
+
+    private void btnConsultarTodoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarTodoActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 0);
+            ArrayList <DatosSemana> datos = (ArrayList <DatosSemana>) Utiles.Utiles.recibirObjeto(Servidor);
+            rellenarTabla(datos);
+        } catch (IOException ex) {
+            Logger.getLogger(formConsultar.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formConsultar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnConsultarTodoActionPerformed
 
     /**
      * @param args the command line arguments
@@ -136,10 +207,54 @@ public class formConsultar extends javax.swing.JFrame {
     private javax.swing.JButton btnFiltrar;
     private javax.swing.JButton btnVolver;
     private javax.swing.JComboBox<String> cmbRegion;
+    private javax.swing.JTable dgvDatos;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextField txtSemana;
     // End of variables declaration//GEN-END:variables
+
+    private void rellenarTabla(ArrayList<DatosSemana> datos) {
+        limpiardgv();
+        DefaultTableModel def = (DefaultTableModel) this.dgvDatos.getModel();
+        for (int i = 0; i < datos.size(); i++) {
+            def.addRow(new Object[1]);
+            añadirEnTabla(i, datos.get(i));
+        }
+    }
+    
+    public void añadirEnTabla(int num, DatosSemana datos){
+        this.dgvDatos.setValueAt(datos.region, num, 0);
+        this.dgvDatos.setValueAt(datos.semana, num, 1);
+        this.dgvDatos.setValueAt(datos.altas, num, 2);
+        this.dgvDatos.setValueAt(datos.infectados, num, 3);
+        this.dgvDatos.setValueAt(datos.muertes, num, 4);
+    }
+    
+
+            
+   
+
+
+    private void limpiardgv() {
+        DefaultTableModel def = (DefaultTableModel) this.dgvDatos.getModel();
+        int a = this.dgvDatos.getRowCount() - 1;
+        for (int i = a; i >= 0; i--) {
+            def.removeRow(def.getRowCount() - 1);
+        }
+    }
+    
+    private void cargarCmb() {
+        try {
+            ArrayList <Region> regiones = (ArrayList <Region>) Utiles.Utiles.recibirObjeto(Servidor);
+            for (int i = 0; i < regiones.size(); i++) {
+                this.cmbRegion.addItem(regiones.get(i).nombre);
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }

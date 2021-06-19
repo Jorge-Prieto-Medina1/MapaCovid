@@ -5,17 +5,53 @@
  */
 package ui;
 
+import Objetos.Region;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SealedObject;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author pablo
  */
 public class formRegiones extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formRegiones
-     */
-    public formRegiones() {
-        initComponents();
+    private Socket Servidor;
+    private PublicKey ClavePublica;
+    private PrivateKey ClavePrivada;
+    private formSeleccion seleccion;
+    private PublicKey claveCifrar;
+   
+   
+    public formRegiones(Socket Servidor, PublicKey clavePublica, PrivateKey claveprivada, formSeleccion Seleccion) {
+        try {
+            initComponents();
+            this.ClavePrivada = claveprivada;
+            this.ClavePublica = clavePublica;
+            this.Servidor = Servidor;
+            this.seleccion = Seleccion;
+            Utiles.Utiles.enviarObjeto(Servidor, clavePublica);   
+            this.claveCifrar = (PublicKey) Utiles.Utiles.recibirObjeto(Servidor);
+            cargarRegiones();
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
     }
 
     /**
@@ -27,19 +63,41 @@ public class formRegiones extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        dgvRegiones = new javax.swing.JTable();
         btnEliminar = new javax.swing.JButton();
         btnAñadir = new javax.swing.JButton();
         txtRegion = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         btnVolver = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        dgvRegiones = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
+
+        btnAñadir.setText("Añadir");
+        btnAñadir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAñadirActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Regiones");
+
+        btnVolver.setText("Volver");
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
+
         dgvRegiones.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null},
                 {null},
                 {null},
                 {null},
@@ -48,77 +106,139 @@ public class formRegiones extends javax.swing.JFrame {
             new String [] {
                 "Region"
             }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        ));
         jScrollPane1.setViewportView(dgvRegiones);
-
-        btnEliminar.setText("Eliminar");
-
-        btnAñadir.setText("Añadir");
-
-        jLabel1.setText("Regiones");
-
-        btnVolver.setText("Volver");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(54, 54, 54)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnAñadir)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 81, Short.MAX_VALUE)
-                                .addComponent(btnEliminar))
-                            .addComponent(txtRegion))
-                        .addGap(44, 44, 44))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(125, 125, 125))
+                        .addComponent(btnAñadir)
+                        .addGap(71, 71, 71)
+                        .addComponent(btnEliminar))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(124, 124, 124)
-                        .addComponent(btnVolver)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                        .addGap(36, 36, 36)
+                        .addComponent(txtRegion, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(130, 130, 130)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(116, 116, 116)
+                        .addComponent(btnVolver)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap(97, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(64, 64, 64)
-                .addComponent(txtRegion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 325, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(59, 59, 59)
+                        .addGap(65, 65, 65)
+                        .addComponent(jLabel1)
+                        .addGap(32, 32, 32)
+                        .addComponent(txtRegion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(42, 42, 42)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnAñadir)
-                            .addComponent(btnEliminar)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(121, 121, 121)
+                            .addComponent(btnEliminar))
+                        .addGap(61, 61, 61)
                         .addComponent(btnVolver)))
-                .addGap(11, 11, 11))
+                .addGap(21, 21, 21))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnAñadirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAñadirActionPerformed
+        
+        try {
+            if (!this.txtRegion.equals("")){
+                Utiles.Utiles.enviarObjeto(Servidor, 0);
+                String region = this.txtRegion.getText();
+                SealedObject regionCifrada = Utiles.Utiles.cifrar(claveCifrar, region);
+                Utiles.Utiles.enviarObjeto(Servidor, regionCifrada);
+                boolean resultado = (boolean) Utiles.Utiles.recibirObjeto(Servidor);
+                if (resultado){
+                    cargarRegiones();
+                }else{
+                   JOptionPane.showMessageDialog(null, "Region en uso"); 
+                }
+                
+                
+            } else{
+                JOptionPane.showMessageDialog(null, "Rellene la region");
+            }
+           
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }//GEN-LAST:event_btnAñadirActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        
+        try {
+            if (!this.txtRegion.equals("")){
+                Utiles.Utiles.enviarObjeto(Servidor, 1);
+                String region = this.txtRegion.getText();
+                SealedObject regionCifrada = Utiles.Utiles.cifrar(claveCifrar, region);
+                Utiles.Utiles.enviarObjeto(Servidor, regionCifrada);
+                boolean resultado = (boolean) Utiles.Utiles.recibirObjeto(Servidor);
+                if (resultado){
+                    cargarRegiones();
+                }else{
+                   JOptionPane.showMessageDialog(null, "La region no existe"); 
+                }
+                
+                
+            } else{
+                JOptionPane.showMessageDialog(null, "Rellene la region");
+            }
+           
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 2);
+            this.seleccion.setVisible(true);
+            this.dispose();
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
+
+  
     /**
      * @param args the command line arguments
      */
@@ -132,4 +252,34 @@ public class formRegiones extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txtRegion;
     // End of variables declaration//GEN-END:variables
+
+      
+    public void añadirEnTabla(int num, Region region){
+        this.dgvRegiones.setValueAt(region.nombre, num, 0);
+    }
+    
+    private void cargarRegiones() {
+            limpiardgv();
+            try {
+                ArrayList <Region> regiones = (ArrayList <Region>) Utiles.Utiles.recibirObjeto(Servidor);
+                DefaultTableModel def = (DefaultTableModel) this.dgvRegiones.getModel();
+                for (int i = 0; i < regiones.size(); i++) {
+                    def.addRow(new Object[1]);
+                    añadirEnTabla(i, regiones.get(i));
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }
+
+
+    private void limpiardgv() {
+        DefaultTableModel def = (DefaultTableModel) dgvRegiones.getModel();
+        int a = dgvRegiones.getRowCount() - 1;
+        for (int i = a; i >= 0; i--) {
+            def.removeRow(def.getRowCount() - 1);
+        }
+    }
 }

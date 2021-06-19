@@ -5,17 +5,28 @@
  */
 package ui;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author pablo
  */
 public class formUsuarios extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formUsuarios
-     */
-    public formUsuarios() {
+   
+    private Socket Servidor;
+    private formSeleccion seleccion;
+    
+    
+    public formUsuarios(Socket Servidor, formSeleccion Seleccion) {
         initComponents();
+        this.Servidor = Servidor;
+        this.seleccion = Seleccion;
     }
 
     /**
@@ -58,6 +69,11 @@ public class formUsuarios extends javax.swing.JFrame {
         });
 
         btnVolver.setText("Volver");
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -69,15 +85,7 @@ public class formUsuarios extends javax.swing.JFrame {
             new String [] {
                 "Nombre", "Email", "Contraseña", "Rol", "Activo"
             }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        ));
         jScrollPane1.setViewportView(jTable1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -130,6 +138,16 @@ public class formUsuarios extends javax.swing.JFrame {
     private void btnEliminarUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarUsuarioActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnEliminarUsuarioActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 3);
+            this.seleccion.setVisible(true);
+            this.dispose();
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
 
     /**
      * @param args the command line arguments

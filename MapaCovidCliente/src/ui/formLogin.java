@@ -12,6 +12,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +28,8 @@ import javax.crypto.SealedObject;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JOptionPane;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 
 /**
  *
@@ -31,6 +42,7 @@ public class formLogin extends javax.swing.JFrame {
     
     public formLogin() throws UnknownHostException, IOException, ClassNotFoundException {
         initComponents();
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         InetAddress dir = InetAddress.getLocalHost();
         this.servidor = new Socket(dir, 9000);
         String claveCodificada =(String) recibirObjeto(servidor);
@@ -147,7 +159,15 @@ public class formLogin extends javax.swing.JFrame {
                     int rol = (int) Utiles.Utiles.recibirObjeto(servidor);
                     String clavePublicaString = (String) Utiles.Utiles.recibirObjeto(servidor);
                     String clavePrivadaString = (String) Utiles.Utiles.recibirObjeto(servidor);
-                     JOptionPane.showMessageDialog(null, "Exito");
+                    
+                    KeyPairGenerator generadorDeClave = KeyPairGenerator.getInstance("RSA");
+                    generadorDeClave.initialize(1024);
+                    KeyPair Par = generadorDeClave.generateKeyPair();
+                    PrivateKey clavePrivada = Par.getPrivate();
+                    PublicKey clavePublica = Par.getPublic();
+                    formSeleccion formulario = new formSeleccion(rol, servidor, clavePublica, clavePrivada);
+                    formulario.setVisible(true);
+                    this.dispose();
                }else{
                    JOptionPane.showMessageDialog(null, "Error contraseña o email incorrectos o cuenta no activada");
                }
@@ -173,7 +193,11 @@ public class formLogin extends javax.swing.JFrame {
     private void btnInvitadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInvitadoActionPerformed
         try {
             Utiles.Utiles.enviarObjeto(servidor, true);
-            Utiles.Utiles.enviarObjeto(servidor, true);
+            Utiles.Utiles.enviarObjeto(servidor, false);
+            formSeleccion formulario = new formSeleccion(servidor);
+            formulario.setVisible(true);
+            this.dispose();
+            
         } catch (IOException ex) {
             Logger.getLogger(formLogin.class.getName()).log(Level.SEVERE, null, ex);
         }

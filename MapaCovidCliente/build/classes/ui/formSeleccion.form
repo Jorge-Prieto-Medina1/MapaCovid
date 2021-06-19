@@ -59,20 +59,32 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Consultar Datos"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDatosActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnRegiones">
       <Properties>
         <Property name="text" type="java.lang.String" value="Gestionar regiones (Gestor/administrador)"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRegionesActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnGestionarDatos">
       <Properties>
         <Property name="text" type="java.lang.String" value="Gestionar datos (Gestor/Administrador)"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGestionarDatosActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnGestionarUsuarios">
       <Properties>
         <Property name="text" type="java.lang.String" value="Gestiona usuarios(SOLO Administradores)"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGestionarUsuariosActionPerformed"/>
@@ -82,6 +94,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Salir"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSalirActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

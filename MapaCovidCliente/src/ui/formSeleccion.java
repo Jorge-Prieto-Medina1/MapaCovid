@@ -5,17 +5,42 @@
  */
 package ui;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author pablo
  */
 public class formSeleccion extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formSeleccion
-     */
-    public formSeleccion() {
+    private Socket Servidor;
+    private PublicKey ClavePublica;
+    private PrivateKey ClavePrivada;
+    
+    public formSeleccion(int rol, Socket Servidor, PublicKey clavePublica, PrivateKey claveprivada){
         initComponents();
+        this.Servidor = Servidor;
+        if (rol != 0){
+            this.btnGestionarDatos.setEnabled(true);
+            this.btnRegiones.setEnabled(true);
+        } else{
+            this.btnGestionarDatos.setEnabled(true);
+            this.btnRegiones.setEnabled(true);
+            this.btnGestionarUsuarios.setEnabled(true);
+        }
+               
+    }
+    
+    public formSeleccion(Socket Servidor) {
+        initComponents();
+        this.Servidor = Servidor;
+ 
     }
 
     /**
@@ -36,12 +61,30 @@ public class formSeleccion extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         btnDatos.setText("Consultar Datos");
+        btnDatos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDatosActionPerformed(evt);
+            }
+        });
 
         btnRegiones.setText("Gestionar regiones (Gestor/administrador)");
+        btnRegiones.setEnabled(false);
+        btnRegiones.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegionesActionPerformed(evt);
+            }
+        });
 
         btnGestionarDatos.setText("Gestionar datos (Gestor/Administrador)");
+        btnGestionarDatos.setEnabled(false);
+        btnGestionarDatos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGestionarDatosActionPerformed(evt);
+            }
+        });
 
         btnGestionarUsuarios.setText("Gestiona usuarios(SOLO Administradores)");
+        btnGestionarUsuarios.setEnabled(false);
         btnGestionarUsuarios.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnGestionarUsuariosActionPerformed(evt);
@@ -49,6 +92,11 @@ public class formSeleccion extends javax.swing.JFrame {
         });
 
         btnSalir.setText("Salir");
+        btnSalir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSalirActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -84,8 +132,62 @@ public class formSeleccion extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnGestionarUsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGestionarUsuariosActionPerformed
-        // TODO add your handling code here:
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 3);
+            Utiles.Utiles.enviarObjeto(Servidor, this.ClavePublica);
+            formRegiones regiones = new formRegiones(this.Servidor, this.ClavePublica, this.ClavePrivada, this);
+            regiones.setVisible(true);
+            this.setVisible(false);
+            
+        } catch (IOException ex) {
+            Logger.getLogger(formSeleccion.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnGestionarUsuariosActionPerformed
+
+    private void btnDatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDatosActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 0);
+            formConsultar consulta = new formConsultar(this.Servidor, this);
+            consulta.show();
+            this.hide();          
+        } catch (IOException ex) {
+            Logger.getLogger(formSeleccion.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnDatosActionPerformed
+
+    private void btnRegionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegionesActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 1);
+            formRegiones regiones = new formRegiones(this.Servidor, this.ClavePublica, this.ClavePrivada, this);
+            regiones.show();
+            this.hide();
+            
+        } catch (IOException ex) {
+            Logger.getLogger(formSeleccion.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnRegionesActionPerformed
+
+    private void btnGestionarDatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGestionarDatosActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 2);
+            formDatos datos = new formDatos(this.Servidor, this.ClavePublica, this.ClavePrivada, this);
+            datos.show();
+            this.hide();
+            
+            
+        } catch (IOException ex) {
+            Logger.getLogger(formSeleccion.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnGestionarDatosActionPerformed
+
+    private void btnSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalirActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 4);
+            this.dispose();
+        } catch (IOException ex) {
+            Logger.getLogger(formSeleccion.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnSalirActionPerformed
 
     /**
      * @param args the command line arguments

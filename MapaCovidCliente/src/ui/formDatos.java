@@ -5,17 +5,53 @@
  */
 package ui;
 
+import Objetos.DatosSemana;
+import Objetos.Region;
+import java.io.IOException;
+import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SealedObject;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author pablo
  */
 public class formDatos extends javax.swing.JFrame {
 
-    /**
-     * Creates new form formDatos
-     */
-    public formDatos() {
-        initComponents();
+    private Socket Servidor;
+    private PublicKey ClavePublica;
+    private PrivateKey ClavePrivada;
+    private formSeleccion seleccion;
+    private PublicKey claveCifrar;
+ 
+    
+    public formDatos(Socket Servidor, PublicKey clavePublica, PrivateKey claveprivada, formSeleccion Seleccion) {
+        try {
+            initComponents();
+            this.ClavePrivada = claveprivada;
+            this.ClavePublica = clavePublica;
+            this.Servidor = Servidor;
+            this.seleccion = Seleccion;
+            Utiles.Utiles.enviarObjeto(Servidor, clavePublica);   
+            this.claveCifrar = (PublicKey) Utiles.Utiles.recibirObjeto(Servidor);
+            cargarCmb();
+        } catch (IOException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+        
     }
 
     /**
@@ -38,7 +74,8 @@ public class formDatos extends javax.swing.JFrame {
         txtAltas = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         btnVolver = new javax.swing.JButton();
-        btnAñadir = new javax.swing.JButton();
+        quitarDatos = new javax.swing.JButton();
+        btnAñadir1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -65,8 +102,25 @@ public class formDatos extends javax.swing.JFrame {
         jLabel5.setText("Alta");
 
         btnVolver.setText("Volver");
+        btnVolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnVolverActionPerformed(evt);
+            }
+        });
 
-        btnAñadir.setText("Añadir");
+        quitarDatos.setText("Quitar");
+        quitarDatos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                quitarDatosActionPerformed(evt);
+            }
+        });
+
+        btnAñadir1.setText("Añadir");
+        btnAñadir1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAñadir1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -97,11 +151,12 @@ public class formDatos extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(txtAltas)
                                     .addComponent(txtInfectados))))
-                        .addGap(80, 80, 80)
+                        .addGap(75, 75, 75)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnVolver, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnAñadir, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(39, 39, 39))))
+                            .addComponent(quitarDatos, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnAñadir1, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(44, 44, 44))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -110,38 +165,115 @@ public class formDatos extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(cmbRegion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel2)
-                        .addComponent(txtSemana, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnAñadir, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(txtMuertes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(txtInfectados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnVolver))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(txtAltas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel2)
+                            .addComponent(txtSemana, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(txtMuertes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(txtInfectados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(txtAltas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(9, 9, 9)
+                        .addComponent(btnAñadir1)
+                        .addGap(26, 26, 26)
+                        .addComponent(quitarDatos)
+                        .addGap(27, 27, 27)
+                        .addComponent(btnVolver)))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtInfectadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtInfectadosActionPerformed
-        // TODO add your handling code here:
+      
     }//GEN-LAST:event_txtInfectadosActionPerformed
 
     private void txtAltasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAltasActionPerformed
-        // TODO add your handling code here:
+        
     }//GEN-LAST:event_txtAltasActionPerformed
+
+    private void btnVolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVolverActionPerformed
+        try {
+            Utiles.Utiles.enviarObjeto(Servidor, 2);
+            this.seleccion.setVisible(true);
+            this.dispose();
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnVolverActionPerformed
+
+    private void btnAñadir1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAñadir1ActionPerformed
+          try {
+            if (!this.txtAltas.equals("") && !this.txtInfectados.equals("")&& !this.txtMuertes.equals("") && !this.txtSemana.equals("") && this.cmbRegion.getSelectedIndex()!= -1){
+                Utiles.Utiles.enviarObjeto(Servidor, 0);
+                String region = this.cmbRegion.getSelectedItem().toString();
+                int altas = Integer.parseInt(this.txtAltas.getText());
+                int infectados = Integer.parseInt(this.txtInfectados.getText());
+                int muertes = Integer.parseInt(this.txtMuertes.getText());
+                int semana = Integer.parseInt(this.txtSemana.getText());
+                
+                DatosSemana datos = new DatosSemana(region, semana,  muertes,  infectados,  altas);
+                //SealedObject datosCifrados = Utiles.Utiles.cifrar(claveCifrar, datos);
+                //Da error por tamaño
+                Utiles.Utiles.enviarObjeto(Servidor, datos);
+                boolean resultado = (boolean) Utiles.Utiles.recibirObjeto(Servidor);
+                if (resultado){
+                    JOptionPane.showMessageDialog(null, "Datos insertados"); 
+                }else{
+                   JOptionPane.showMessageDialog(null, "Los datos ya existen"); 
+                }
+                
+                
+            } else{
+                JOptionPane.showMessageDialog(null, "Rellene los campos ");
+            }
+           
+        } catch (IOException ex) {
+            Logger.getLogger(formRegiones.class.getName()).log(Level.SEVERE, null, ex);
+        
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_btnAñadir1ActionPerformed
+
+    private void quitarDatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quitarDatosActionPerformed
+         if (!this.txtSemana.equals("") && this.cmbRegion.getSelectedIndex()!= -1){
+             try {
+                 Utiles.Utiles.enviarObjeto(Servidor, 1);
+                 String region = this.cmbRegion.getSelectedItem().toString();
+                 int semana = Integer.parseInt(this.txtSemana.getText());
+                 System.out.println(semana);
+                 System.out.println(region);
+                 DatosSemana datos = new DatosSemana(region, semana);
+ 
+                 Utiles.Utiles.enviarObjeto(Servidor, datos);
+                 boolean resultado = (boolean) Utiles.Utiles.recibirObjeto(Servidor);
+                 if (resultado){
+                     JOptionPane.showMessageDialog(null, "Datos borrados");
+                 }else{
+                     JOptionPane.showMessageDialog(null, "Los datos no existian");
+                 }
+             } catch (IOException ex) {
+                 Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+             } catch (ClassNotFoundException ex) {
+                 Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+             }
+         } else{
+              JOptionPane.showMessageDialog(null, "Añada la semana y marque una region");
+         }
+    }//GEN-LAST:event_quitarDatosActionPerformed
 
     /**
      * @param args the command line arguments
@@ -149,7 +281,7 @@ public class formDatos extends javax.swing.JFrame {
   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAñadir;
+    private javax.swing.JButton btnAñadir1;
     private javax.swing.JButton btnVolver;
     private javax.swing.JComboBox<String> cmbRegion;
     private javax.swing.JLabel jLabel1;
@@ -157,9 +289,24 @@ public class formDatos extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JButton quitarDatos;
     private javax.swing.JTextField txtAltas;
     private javax.swing.JTextField txtInfectados;
     private javax.swing.JTextField txtMuertes;
     private javax.swing.JTextField txtSemana;
     // End of variables declaration//GEN-END:variables
+
+    private void cargarCmb() {
+        try {
+            ArrayList <Region> regiones = (ArrayList <Region>) Utiles.Utiles.recibirObjeto(Servidor);
+            for (int i = 0; i < regiones.size(); i++) {
+                this.cmbRegion.addItem(regiones.get(i).nombre);
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(formDatos.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 }
